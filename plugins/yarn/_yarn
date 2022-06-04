@@ -1,4 +1,4 @@
-#compdef yarn
+#compdef yarn yarnw
 # ------------------------------------------------------------------------------
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -85,6 +85,30 @@ _global_commands=(
   'upgrade-interactive:Interactively upgrade packages'
 )
 
+_yarn_find_executable() {
+  local dir=$(cd "$1" && pwd)
+
+  while true
+  do
+    if [[ -f "${dir}/.yarnrc.yml" || -f "${dir}/.yarnrc" ]]; then
+      if [[ -f "${dir}/yarnw" ]]; then
+        echo "${dir}/yarnw"
+      else
+        echo "yarn"
+      fi
+      return
+    fi
+
+    if [[ $dir == '/']]; then
+      break
+    fi
+
+    dir=$(dirname $dir)
+  done
+
+  echo "yarn"
+}
+
 _yarn_find_package_json() {
   local dir=$(cd "$1" && pwd)
 
@@ -132,14 +156,14 @@ _yarn_scripts() {
     if [[ -d "${_yarn_run_cwd}/node_modules" ]]; then
       binaries=($(cd $_yarn_run_cwd && echo node_modules/.bin/*(x:t)))
     else
-      binaries=($(cd $_yarn_run_cwd && yarn bin | perl -wln -e 'm{^[^:]+: (\S+)$} and print $1'))
+      binaries=($(cd $_yarn_run_cwd && $(_yarn_find_executable $_yarn_run_cwd) bin | perl -wln -e 'm{^[^:]+: (\S+)$} and print $1'))
     fi
   else
     packageJson=$(_yarn_find_package_json $pwd)
     if [[ -d node_modules ]]; then
       binaries=($(echo node_modules/.bin/*(x:t)))
     else
-      binaries=($(yarn bin | perl -wln -e 'm{^[^:]+: (\S+)$} and print $1'))
+      binaries=($($(_yarn_find_executable $pwd) bin | perl -wln -e 'm{^[^:]+: (\S+)$} and print $1'))
     fi
   fi
 
@@ -168,12 +192,13 @@ _yarn_add_files() {
 }
 
 _yarn_workspaces() {
-  local version=$(yarn --version |sed -n 's|\([0-9]*\).*|\1|p')
+  local yarn_cmd=$(_yarn_find_executable $pwd)
+  local version=$($yarn_cmd --version | sed -n 's|\([0-9]*\).*|\1|p')
   local -a workspaces
   if [[ $version == "1" ]]; then
-    workspaces=(${(@f)$(yarn workspaces info |sed -n -e 's/^  "\([^"]*\)": {/\1/p')})
+    workspaces=(${(@f)$($yarn_cmd workspaces info | sed -n -e 's/^  "\([^"]*\)": {/\1/p')})
   else
-    workspaces=(${(@f)$(yarn workspaces list --json | sed -n 's|.*"name":"\([^"]*\)"}|\1|p')})
+    workspaces=(${(@f)$($yarn_cmd workspaces list --json | sed -n 's|.*"name":"\([^"]*\)"}|\1|p')})
   fi
   _describe 'workspace' workspaces
 }
