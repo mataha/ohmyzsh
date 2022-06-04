@@ -1,5 +1,8 @@
 function yarn-or-yarnw() {
-  local dir="$PWD" project_root="$PWD"
+  local dir project_root
+
+  dir="$(pwd)"
+
   while [[ "$dir" != / ]]; do
     if [[ -f "$dir/.yarnrc.yml" || -f "$dir/.yarnrc" || -f "$dir/yarnw" ]]; then
       project_root="$dir"
@@ -9,7 +12,7 @@ function yarn-or-yarnw() {
   done
 
   if [[ -f "$project_root/yarnw" ]]; then
-    echo "executing yarnw instead of yarn"
+    echo "Yarn wrapper was found, executing it instead of yarn..."
     "$project_root/yarnw" "$@"
   else
     command yarn "$@"
