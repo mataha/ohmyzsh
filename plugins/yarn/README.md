@@ -9,9 +9,25 @@ To use it, add `yarn` to the plugins array in your zshrc file:
 plugins=(... yarn)
 ```
 
+## Usage
+
+This plugin creates a function called `yarn-or-yarnw`, which is aliased to
+`yarn`, which is used to determine whether the current project directory has
+the Yarn wrapper generated inside it and enabled. If `yarnw` is present it will
+be used, otherwise `yarn` is used instead. Yarn commands and scripts can be
+executed directly without regard for whether it is `yarn` or `yarnw`. It also
+supports being called from any directory inside the root project directory.
+
+Examples:
+
+```zsh
+yarn
+yarn build
+```
+
 ## Global scripts directory
 
-It also adds `yarn` global scripts dir (commonly `~/.yarn/bin`) to the `$PATH`.
+It also adds Yarn global scripts dir (commonly `~/.yarn/bin`) to the `$PATH`.
 To disable this feature, set the following style in your `.zshrc`:
 
 ```zsh
